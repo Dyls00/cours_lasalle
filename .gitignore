@@ -3,3 +3,4 @@ scripts/
 __pycache__/
 .DS_Store
 *.pyc
+**/04_infrastructure/
