@@ -2,7 +2,7 @@
 
 Bienvenue dans le dépôt du cours **Initiation au Big Data & Data Engineering** (3 jours / 21h).
 
-Cette formation est axée à **80% sur la pratique** et s'appuie sur l'écosystème **Google Cloud Platform (GCP)**, les labs officiels **Google Cloud Skills Boost / Qwiklabs**, et des outils modernes de Data Engineering (**BigQuery, dlt, dbt, Apache Beam, Dataflow, Looker Studio**).
+Cette formation est axée à **80% sur la pratique** et s'appuie sur l'écosystème **Google Cloud Platform (GCP)**, les cas pratiques sont inspirés de labs officiels **Google Cloud Skills Boost**, et des outils modernes de Data Engineering (**BigQuery, dlt, dbt, Looker Studio, GitHub Actions**).
 
 ---
 
@@ -31,13 +31,13 @@ Cette formation est axée à **80% sur la pratique** et s'appuie sur l'écosyst�
 
 ---
 
-### 🔴 Jour 3 : Fiabiliser, streamer, évaluer (7h)
+### 🔴 Jour 3 : Fiabiliser, orchestrer, évaluer (7h)
 
 | Module | Durée | Type | Supports & Contenu |
 | :--- | :---: | :---: | :--- |
 | **3.1 Qualité & Contrats de Données** | 1h00 | Mixte | Data Contracts, tests `dbt` (generic & singular), freshness des données. *Exercice : "Casser un test et réparer le pipeline".* |
-| **3.2 Orchestration de Pipeline** | 0h45 | Pratique | Script d'orchestration end-to-end (Bash / GitHub Actions) enchaînant : `dlt` (ingestion) ➔ `dbt run` (transformations) ➔ `dbt test` (validation). |
-| **3.3 Vélocité : Pub/Sub, Beam & Dataflow** | 2h15 | Théorie (30m) + Pratique | 📊 [Slides Théo 3.3](02_labs/slides/03_slides_streaming_pubsub_beam.md)<br>Traitement Batch vs Streaming, fenêtrage (windowing), gestion des files et doublons. Exécution d'un pipeline **Apache Beam** en local puis sur **Google Cloud Dataflow** vers BigQuery. |
+| **3.2 Orchestration Locale (Bash)** | 0h45 | Pratique | Script d'orchestration local (Bash) enchaînant séquentiellement : `dlt` (ingestion) ➔ `dbt run` (transformations) ➔ `dbt test` (validation). |
+| **3.3 Orchestration & Abstraction Serverless** | 2h15 | Théorie (30m) + Pratique | 📊 [Slides Théo 3.3](02_labs/slides/03_slides_orchestration_serverless.md) & 🧪 [Lab GitHub Actions](02_labs/day3_production/03_lab_github_actions_orchestration.md)<br>L'évolution vers le FaaS (Function as a Service). Pourquoi Airflow est le standard. Mise en place d'un pipeline CI/CD automatisé et gratuit avec **GitHub Actions**. |
 | **3.4 Data Viz avec Looker Studio** | 0h30 | Pratique | Connexion directe à la table Gold BigQuery et création d'un tableau de bord décisionnel d'une page. |
 | **3.5 Cas pratique évalué (Examen)** | 2h30 | Autonomie / Évaluation | **Mission globale sur dépôt Git :** Ingestion d'une API dédiée via `dlt`, aplatissement des JSON dans BigQuery, transformation dbt (Silver/Gold) documentée et testée, et requêtes analytiques finales. + QCM théorique. |
 
@@ -47,12 +47,13 @@ Cette formation est axée à **80% sur la pratique** et s'appuie sur l'écosyst�
 
 ```text
 big_data/
+├── .github/workflows/       # 🚀 Pipeline CI/CD GitHub Actions d'orchestration
 ├── 01_data/                 # Datasets bruts, schémas JSON, exemples de logs
 ├── 02_labs/                 # TPs, exercices et scripts guidés
 │   ├── slides/              # 📊 Présentations / Slides de cours (Marp Markdown)
 │   ├── day1_ingestion/      # GCP CLI, GCS Data Lake, Loading Data into BQ, dlt
 │   ├── day2_transformation/ # Partitioning/Clustering, JSON/UNNEST, Projet dbt
-│   └── day3_production/     # dbt tests, Orchestration, Apache Beam / Dataflow, Looker Studio
+│   └── day3_production/     # dbt tests, GitHub Actions, Looker Studio
 ├── 03_evaluation/           # Sujet et base du Cas Pratique Évalué (Examen final)
 ├── pyproject.toml           # Gestion des dépendances Python (uv)
 └── README.md                # Ce document
@@ -72,3 +73,29 @@ big_data/
 cd big_data
 uv sync
 ```
+
+
+### 3. Procédure d'accès à Google Cloud Platform pour le cours
+
+Pour accéder à l'environnement du cours (BigQuery, Cloud Storage), suivez ces 3 étapes :
+
+#### 1. Activer votre adresse comme compte Google (si ce n'est pas déjà fait)
+Si votre adresse n'est pas déjà un compte Google :
+1. Rendez-vous sur : https://accounts.google.com/SignUpWithoutGmail
+2. Renseignez votre nom, prénom et **l'adresse email exacte** que vous avez fournie pour le cours.
+3. Choisissez un mot de passe.
+4. Google vous envoie un code de vérification à 6 chiffres par email : saisissez-le pour valider.
+*(Note : Cela ne change rien à votre boîte mail actuelle, cela permet juste à Google de vous authentifier).*
+
+#### 2. Accepter l'invitation au groupe (si applicable)
+- Vous avez reçu un email d'invitation à rejoindre le groupe Google `lasalle-etudiants@googlegroups.com`.
+- Cliquez sur **Accepter l'invitation** / **Rejoindre le groupe**.
+
+#### 3. Accéder à la console Google Cloud
+1. Rendez-vous sur : https://console.cloud.google.com
+2. Connectez-vous avec votre adresse email et le mot de passe défini à l'étape 1.
+3. Acceptez les conditions d'utilisation lors de la première connexion.
+4. **Sélectionnez le projet du cours** :
+   - En haut à gauche, à côté du logo "Google Cloud", cliquez sur le menu déroulant des projets.
+   - Sélectionnez le projet du cours : `lasalle-big-data`.
+5. Vous avez maintenant accès aux services autorisés (BigQuery, Cloud Storage) !
