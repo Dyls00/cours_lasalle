@@ -99,8 +99,8 @@ code .
 ```
 
 1. Dans **VS Code**, ouvrez l'un des notebooks du dossier `02_notebooks/`.
-2. Assurez-vous d'avoir l'extension **Jupyter** installée dans VS Code.
-3. En haut à droite du notebook, cliquez sur **Select Kernel** (Sélectionner le noyau) et choisissez l'environnement Python du projet : **`.venv`**.
+2. Assurez-vous d'avoir l'extension **Jupyter** installée (onglet *Extensions* ou `Ctrl + Shift + X`).
+3. Sélectionnez l'interpréteur Python : ouvrez la palette de commandes avec `Ctrl + Shift + P` (ou `Cmd + Shift + P` sur Mac), tapez **`Python: Select Interpreter`** et sélectionnez l'environnement **`.venv`** (ou cliquez sur **Select Kernel** en haut à droite du notebook).
 4. Vous êtes prêt à exécuter les cellules avec `Shift + Enter` !
 
 ---
