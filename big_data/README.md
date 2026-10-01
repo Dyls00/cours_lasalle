@@ -13,10 +13,10 @@ Cette formation est axée à **80% sur la pratique** et s'appuie sur l'écosyst�
 | Module | Durée | Type | Supports & Contenu |
 | :--- | :---: | :---: | :--- |
 | **1.1 Le paradigme Big Data** | 1h15 | Théorie + Démo | 📊 [Slides Théo 1.1](02_labs/slides/01_slides_paradigme_bigdata.md)<br>Les 5V, OLTP vs OLAP, calcul distribué, découplage stockage/calcul, Lake / DWH / Lakehouse. |
-| **1.2 GCP, coûts, gouvernance** | 0h45 | Mixte | Projets GCP, IAM, résidence des données en EU (RGPD), modèle de tarification BigQuery & Cloud Storage, configuration d'alertes budgétaires en direct. |
-| **1.3 Prise en main BigQuery** | 0h30 | Pratique | Cloud Shell Editor / VS Code local + CLI `gcloud` & `bq`. Requêtes sur datasets publics, utilisation du **Dry Run** pour estimer le coût des requêtes. |
+| **1.2 GCP, coûts, gouvernance** | 0h45 | Mixte | 📊 [Cours/Lab 1.2](02_labs/day1_ingestion/02_gcp_iam_budget_setup.md)<br>Projets GCP, IAM, résidence des données en EU (RGPD), modèle de tarification BigQuery & Cloud Storage, configuration d'alertes budgétaires en direct. |
+| **1.3 Prise en main BigQuery** | 0h30 | Pratique | 🧪 [Lab 1.1 & 1.3 : OLAP, Stockage en Colonnes et UI (Notebook)](02_labs/day1_ingestion/01_lab_bigquery_olap_and_dry_run.ipynb)<br>Cloud Shell Editor / VS Code local + CLI `gcloud` & `bq`. Requêtes sur datasets publics, utilisation du **Dry Run** pour estimer le coût des requêtes. |
 | **1.4 Lake vs Data Warehouse** | 1h15 | Pratique | 🧪 [Lab Qwiklabs Data Lake CLI](02_labs/day1_ingestion/04_lab_qwiklabs_data_lake_and_gcs_cli.md)<br>Création de buckets GCS, stockage de logs JSON, création de **Tables Externes**, chargement en **Tables Natives BigQuery**. |
-| **1.5 ELT & Ingestion avec `dlt`** | 3h15 | Théorie (30m) + Pratique | 🧪 [Lab Qwiklabs Loading Data into BQ](02_labs/day1_ingestion/05_lab_qwiklabs_loading_data_into_bigquery.md)<br>Ingestion d'API REST vers BigQuery (Couche **Bronze**), gestion de la *schema evolution* et du chargement incrémental. |
+| **1.5 ELT & Ingestion avec `dlt`** | 3h15 | Théorie (30m) + Pratique | 🧪 [Lab Qwiklabs Loading Data into BQ](02_labs/day1_ingestion/05_lab_qwiklabs_loading_data_into_bigquery.md) & 📚 [Parcours Notebooks dlt (Colab)](02_labs/day1_ingestion/dlt_tutorials/README.md)<br>Ingestion d'API REST vers BigQuery (Couche **Bronze**), gestion de la *schema evolution* et du chargement incrémental. |
 
 ---
 
@@ -77,21 +77,17 @@ uv sync
 
 ### 3. Procédure d'accès à Google Cloud Platform pour le cours
 
-Pour accéder à l'environnement du cours (BigQuery, Cloud Storage), suivez ces 3 étapes :
+Pour accéder à l'environnement du cours sur GCP, suivez ces 3 étapes :
 
-#### 1. Activer votre adresse comme compte Google (si ce n'est pas déjà fait)
+#### 1. Activer votre adresse @campus.lasallebourges.com comme compte Google (si ce n'est pas déjà fait)
 Si votre adresse n'est pas déjà un compte Google :
 1. Rendez-vous sur : https://accounts.google.com/SignUpWithoutGmail
-2. Renseignez votre nom, prénom et **l'adresse email exacte** que vous avez fournie pour le cours.
+2. Renseignez votre nom, prénom et **l'adresse email exacte**  d'étudiant.
 3. Choisissez un mot de passe.
 4. Google vous envoie un code de vérification à 6 chiffres par email : saisissez-le pour valider.
 *(Note : Cela ne change rien à votre boîte mail actuelle, cela permet juste à Google de vous authentifier).*
 
-#### 2. Accepter l'invitation au groupe (si applicable)
-- Vous avez reçu un email d'invitation à rejoindre le groupe Google `lasalle-etudiants@googlegroups.com`.
-- Cliquez sur **Accepter l'invitation** / **Rejoindre le groupe**.
-
-#### 3. Accéder à la console Google Cloud
+#### 2. Accéder à la console Google Cloud
 1. Rendez-vous sur : https://console.cloud.google.com
 2. Connectez-vous avec votre adresse email et le mot de passe défini à l'étape 1.
 3. Acceptez les conditions d'utilisation lors de la première connexion.
