@@ -3,7 +3,7 @@
 Ce dossier regroupe les notebooks officiels de formation créés par l'équipe de **dltHub** (*dlt Fundamentals Course*), adaptés pour le cours de Big Data.
 
 Chaque notebook est conçu pour être exécuté pas à pas :
-- **En local** dans votre environnement virtuel (`uv run jupyter lab`).
+- **En local** dans VSCode
 - **Dans Google Colab** directement en un clic grâce au badge [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com) situé en tête de chaque fichier.
 
 ---
@@ -33,12 +33,9 @@ Pour les étudiants qui avancent plus vite ou souhaitent approfondir les mécani
 
 ## 🚀 Comment lancer les notebooks ?
 
-### Option A : Dans Google Colab (Zéro installation)
+### Option A : En local avec VSCode (Environnement virtuel)
+1. Ouvrez le dossier du projet dans VSCode.
+
+### Option B : Dans Google Colab (Zéro installation)
 1. Ouvrez le notebook et cliquez sur le badge **Open in Colab** en haut de la page.
 2. Exécutez la première cellule `!pip install "dlt[duckdb]"` pour installer l'environnement Colab.
-
-### Option B : En local avec votre environnement de cours
-```bash
-cd big_data
-uv run jupyter lab 02_cours/day1_ingestion/labs/
-```
