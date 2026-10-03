@@ -28,7 +28,7 @@ footer: "La Salle "
 Ingestion brute des sources (APIs, logs, bases) ➔ *GCS / BigQuery Bronze*
 
 ⚙️ **2. Préparation & Nettoyage**
-Typage, déduplication, enrichissement ➔ *dbt / Silver & Gold*
+Typage, déduplication, enrichissement ➔ *dbt (data build tool) : framework standard pour transformer la donnée via du code SQL versionné.*
 
 🔍 **3. Exploration & Visualisation**
 Analyse descriptive et tableaux de bord ➔ *SQL BigQuery & Looker Studio*
@@ -180,7 +180,7 @@ La data a suivi exactement la même révolution que le web :
 
 - **Le Nouveau Standard : Le Découplage Total** : _on separe le `calcul` du `stockage`_
   - Le stockage est géré par une couche hautement disponible et quasi infinie.
-  - Le calcul est un pool de CPU éphémères loués uniquement pendant l'exécution de la requête. _On parle aussi d'Infrastructure as a Service (IaaS)_
+  - Le calcul est un pool de CPU éphémères loués uniquement pendant l'exécution de la requête. _"C'est la définition même du Serverless/PaaS Data"_
 
 ---
 
