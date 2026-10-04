@@ -28,7 +28,7 @@ footer: "La Salle "
 Ingestion brute des sources (APIs, logs, bases) ➔ *GCS / BigQuery Bronze*
 
 ⚙️ **2. Préparation & Nettoyage**
-Typage, déduplication, enrichissement ➔ *dbt (data build tool) : framework standard pour transformer la donnée via du code SQL versionné.*
+Typage, déduplication, enrichissement ➔ *dbt (data build tool) : framework sql pour transformer la donnée via du code SQL versionné.*
 
 🔍 **3. Exploration & Visualisation**
 Analyse descriptive et tableaux de bord ➔ *SQL BigQuery & Looker Studio*
