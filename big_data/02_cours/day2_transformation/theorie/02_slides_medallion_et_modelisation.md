@@ -6,7 +6,7 @@ paginate: true
 backgroundColor: #eaeaea
 color: #1a1a2e
 header: "Formation Big Data — Module 2 : Transformation & Modélisation"
-footer: "La Salle — Data Engineering sur GCP"
+footer: "La Salle — Intro Big Data"
 style: |
   section {
     font-size: 24px;
@@ -390,208 +390,6 @@ Coût = (Bytes scannés) × (5$ / TB)
 
 ---
 
-## 🔧 Qu'est-ce que dbt ? *(aperçu)*
-
-**dbt** (Data Build Tool) est le framework standard de transformation de données en entreprise.
-
-### Philosophie centrale
-
-> *"dbt enables analytics engineers to transform data in their warehouses by simply writing SELECT statements."*
-
-- ✅ **SQL uniquement** : pas de Python, pas de Spark pour la plupart des cas
-- ✅ **Git-friendly** : chaque modèle = un fichier `.sql` versionnable
-- ✅ **Tests intégrés** : data quality out-of-the-box
-- ✅ **Documentation automatique** : catalogue de données généré
-- ✅ **Lineage** : graphe de dépendances automatique
-
----
-
-## 📁 Structure d'un projet dbt
-
-```
-mon_projet_dbt/
-├── dbt_project.yml        # Configuration principale
-├── profiles.yml           # Connexions BigQuery (hors Git !)
-├── models/
-│   ├── bronze/
-│   │   └── stg_raw_events.sql       # staging depuis source brute
-│   ├── silver/
-│   │   └── int_user_sessions.sql    # intermediate transformations
-│   └── gold/
-│       └── fct_daily_sales.sql      # modèles finaux (facts)
-├── tests/
-│   └── generic/                     # tests SQL custom
-├── macros/                          # fonctions SQL réutilisables
-└── docs/
-    └── overview.md
-```
-
----
-
-## 🧱 Un modèle dbt — Le cœur du framework
-
-Un modèle dbt = **un fichier SQL + une `SELECT` statement**
-
-```sql
--- models/silver/int_user_sessions.sql
-
-{{ config(
-    materialized = 'incremental',
-    partition_by = { 'field': 'session_date', 'data_type': 'date' },
-    cluster_by   = ['user_id']
-) }}
-
-SELECT
-    user_id,
-    DATE(created_at)                AS session_date,
-    MIN(created_at)                 AS session_start,
-    MAX(created_at)                 AS session_end,
-    COUNT(event_id)                 AS events_count,
-    SUM(CASE WHEN event_type = 'purchase'
-        THEN amount ELSE 0 END)     AS revenue
-FROM {{ ref('stg_raw_events') }}   -- référence à un autre modèle !
-{% if is_incremental() %}
-  WHERE created_at > (SELECT MAX(session_start) FROM {{ this }})
-{% endif %}
-GROUP BY 1, 2
-```
-
----
-
-## ⚙️ Les matérialisations dbt
-
-| Type | Comportement | Quand l'utiliser |
-|------|-------------|------------------|
-| `view` | Vue SQL recalculée à chaque requête | Couche staging/bronze légère |
-| `table` | Table physique recréée à chaque `dbt run` | Gold, petits datasets |
-| `incremental` | Upsert uniquement des nouvelles données | Tables volumineuses en Silver |
-| `ephemeral` | CTE intermédiaire, jamais persisté | Calculs intermédiaires |
-
-```yaml
-# dbt_project.yml — configuration des matérialisations par couche
-models:
-  mon_projet:
-    bronze:
-      +materialized: view
-    silver:
-      +materialized: incremental
-    gold:
-      +materialized: table
-```
-
----
-
-## 🧪 Tests dbt — Data Quality intégrée
-
-dbt offre des **tests génériques** déclarés en YAML :
-
-```yaml
-# models/silver/schema.yml
-models:
-  - name: int_user_sessions
-    columns:
-      - name: user_id
-        tests:
-          - not_null
-          - relationships:
-              to: ref('dim_users')
-              field: user_id
-      - name: session_date
-        tests:
-          - not_null
-      - name: revenue
-        tests:
-          - not_null
-          - accepted_range:
-              min_value: 0
-```
-
-```bash
-dbt test --select int_user_sessions  # lancer les tests
-```
-
----
-
-## 🔗 Le Lineage dbt — Graphe de dépendances
-
-La fonction `ref()` permet à dbt de construire le **DAG** (Directed Acyclic Graph) :
-
-```
-stg_raw_events (bronze/view)
-        │
-        ├──► int_user_sessions (silver/incremental)
-        │            │
-        │            └──► fct_daily_sales (gold/table) ──► Looker Studio
-        │
-        └──► int_product_views (silver/incremental)
-                     │
-                     └──► fct_conversion_funnel (gold/table)
-```
-
-```bash
-# Exécuter uniquement un sous-graphe
-dbt run --select +fct_daily_sales    # fct_daily_sales et ses dépendances
-dbt run --select int_user_sessions+  # et tous ses descendants
-```
-
----
-
-## 📊 dbt sur BigQuery — Configuration
-
-```yaml
-# profiles.yml (jamais commité dans Git !)
-lasalle_bigdata:
-  target: dev
-  outputs:
-    dev:
-      type: bigquery
-      method: oauth
-      project: lasalle-big-data
-      dataset: dbt_dev_{{ env_var('DBT_USER', 'student') }}
-      threads: 4
-      timeout_seconds: 300
-      location: EU
-      priority: interactive
-```
-
-```bash
-dbt debug           # tester la connexion
-dbt run             # exécuter tous les modèles
-dbt test            # tester la qualité des données
-dbt docs generate   # générer la documentation
-dbt docs serve      # ouvrir le catalogue dans le navigateur
-```
-
----
-
-**dbt** (Data Build Tool) est le framework standard en entreprise pour les pipelines de transformation.
-
-- ✅ **SQL uniquement** — chaque modèle = un fichier `.sql`
-- ✅ **`ref()`** — les dépendances entre modèles sont déclarées, pas codées en dur
-- ✅ **Tests intégrés** — `not_null`, `unique`, `accepted_values` en YAML
-- ✅ **Lineage automatique** — graphe de dépendances généré
-- ✅ **Git-friendly** — versionnement complet du pipeline
-
-```
-stg_raw_events (bronze/view)
-        │
-        └──► int_user_sessions (silver/table)
-                     │
-                     └──► fct_daily_sales (gold/table) ──► Looker
-```
-
-> 🔬 **Démo live** : exploration d'un projet dbt connecté à BigQuery
-
----
-
-<!-- _class: lead -->
-
-# Partie 5 — Bonus
-## Modélisation des données
-### Kimball vs Dénormalisation BigQuery
-
----
-
 ## 🌟 Le Modèle en Étoile (Kimball)
 
 Approche classique des **Data Warehouses RDBMS** (Redshift, Snowflake) :
@@ -659,7 +457,45 @@ JOIN products p ON o.product_id = p.product_id;
 
 <!-- _class: lead -->
 
-# Partie 5 - Bonus
+# Partie 5
+## Aperçu dbt — L'Outil Standard Pro
+### (Démonstration rapide)
+
+---
+
+## 🔧 Qu'est-ce que dbt ?
+
+**dbt** (Data Build Tool) est le framework standard de transformation de données en entreprise.
+
+> *"dbt permet de transformer la donnée en écrivant uniquement des requêtes SELECT."*
+
+- ✅ **SQL uniquement** : Pas besoin de Python ou Spark.
+- ✅ **Gestion de versions** : Chaque transformation est un fichier `.sql` tracé avec Git.
+- ✅ **Tests intégrés** : Tests de qualité des données (valeurs nulles, unicité).
+- ✅ **Lineage automatique** : Déduction automatique des dépendances entre tables.
+
+---
+
+## 🚀 Le paradigme dbt en action
+
+Un modèle dbt = **un fichier SQL avec une requête `SELECT`**.
+
+```sql
+-- models/gold/fct_daily_sales.sql
+SELECT
+    DATE(created_at) AS report_date,
+    SUM(amount)      AS daily_revenue
+FROM {{ ref('int_user_sessions') }} -- 🔗 dbt gère la dépendance automatiquement !
+GROUP BY 1
+```
+
+> 🔬 **Démo live** : Exploration d'un projet dbt connecté à BigQuery
+
+---
+
+<!-- _class: lead -->
+
+# Partie 6 - Bonus
 ## Deep Dive : `STRUCT` & `ARRAY`
 ### La dénormalisation hiérarchique dans BigQuery
 
