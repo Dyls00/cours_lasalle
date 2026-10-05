@@ -10,17 +10,17 @@ Ce programme intensif de **14 heures (2 jours)** est conçu pour des étudiants 
 
 À l'issue de cette formation, vous serez capables de :
 1. **Adopter avec **NumPy** pour effectuer des calculs scientifiques à haute performance sans boucles lentes.
-2. **Manipuler, nettoyer et transformer des jeux de données complexes** avec **Pandas** (gestion des `NaN`, doublons, types de données, accesseur `.dt`).
+2. **Manipuler, nettoyer et transformer des jeux de données complexes** avec **Pandas** (gestion des `NaN`, doublons, types de données, ccréation de nouvelles variables).
 3. **Réaliser des agrégations avancées** (fonctions `groupby`, tableaux croisés dynamiques / *pivot tables*, fenêtrages).
 4. **Fusionner et structurer des données multi-tables** (`merge`, `join`, `concat`).
 5. **Conduire une Analyse Exploratoire de Données (EDA)** complète sur un jeu de données réel et présenter des synthèses visuelles et chiffrées.
-6. **Préparer la transition vers le Big Data** : les concepts manipulés ici sur des fichiers locaux constituent le socle direct du prochain cours d'**Introduction au Big Data** (Google BigQuery & SQL à grande échelle).
+6. **Préparer la transition vers le Big Data** : les concepts manipulés ici sur des fichiers locaux constituent le socle direct du prochain cours d'**Introduction au Big Data**
 
 ---
 
 ## 🛍️ Fil Rouge : *TheLook eCommerce*
 
-Tout au long des exercices et du projet final (*Capstone*), vous travaillerez sur des données réelles d'une boutique de mode en ligne : **TheLook eCommerce** (dataset public hébergé sur Google BigQuery).
+Tout au long des exercices et du projet final, vous travaillerez sur des données réelles d'une boutique en ligne : **TheLook eCommerce** (dataset public hébergé sur Google BigQuery).
 
 Le jeu de données couvre :
 - **Utilisateurs** (`thelook_users.csv`) : profils, géographie, canaux d'acquisition.
