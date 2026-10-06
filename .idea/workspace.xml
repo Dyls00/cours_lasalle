@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="b817ab5d-1fb4-40aa-be58-3cb07e03140f" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/data_manipulation/02_notebooks/00_introduction_et_configuration.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/data_manipulation/02_notebooks/00_introduction_et_configuration.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data_manipulation/02_notebooks/01_numpy_pensee_vectorielle.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/data_manipulation/02_notebooks/01_numpy_pensee_vectorielle.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data_manipulation/02_notebooks/02_pandas_premiers_pas.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/data_manipulation/02_notebooks/02_pandas_premiers_pas.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data_manipulation/02_notebooks/03_transformations_feature_engineering.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/data_manipulation/02_notebooks/03_transformations_feature_engineering.ipynb" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 0
+}]]></component>
+  <component name="ProjectId" id="3KJKjl0fHmfSAPE1gNdRAC2waMF" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "ignore.virus.scanning.warn.message": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "C:/Users/dkief/Documents/La-salle-Bourges/2027/TBE/cours_lasalle",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.31033.145" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.31033.145" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="b817ab5d-1fb4-40aa-be58-3cb07e03140f" name="Changes" comment="" />
+      <created>1791270368944</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1791270368944</updated>
+      <workItem from="1791270372574" duration="15000" />
+    </task>
+    <servers />
+  </component>
+</project>
