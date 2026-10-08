@@ -6,4 +6,4 @@ __pycache__/
 *.py
 **/04_infrastructure/
 data_manipulation/02_notebooks/solutions/08_capstone_eda_thelook_solution.ipynb
-03_evaluation/ 
+big_data/03_evaluation/solutions
