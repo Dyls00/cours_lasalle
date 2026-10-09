@@ -35,13 +35,13 @@ style: |
 
 | # | Thème | Durée |
 |---|-------|-------|
-| 1 | L'évolution du Cloud : IaaS → PaaS → FaaS | 15 min |
-| 2 | L'Abstraction Serverless (Function as a Service) | 15 min |
-| 3 | Rappel J2 : Scheduled Queries & Materialized Views | 20 min |
-| 4 | Pourquoi l'Orchestration est vitale en Data Engineering | 15 min |
-| 5 | Apache Airflow : Le standard de l'industrie | 20 min |
-| 6 | GitHub Actions : L'approche CI/CD agile | 15 min |
-| 7 | Synthèse : Choisir le bon outil | 10 min |
+| 1 | L'évolution du Cloud : IaaS → PaaS → FaaS 
+| 2 | L'Abstraction Serverless (Function as a Service)
+| 3 | Rappel J2 : Scheduled Queries & Materialized Views 
+| 4 | Pourquoi l'Orchestration est vitale en Data Engineering 
+| 5 | Apache Airflow : Le standard de l'industrie 
+| 6 | GitHub Actions : L'approche CI/CD agile 
+| 7 | Synthèse : Choisir le bon outil 
 
 ---
 
@@ -64,6 +64,7 @@ Vous gérez  →  Vous gérez  →  Vous configurez  →  Vous écrivez
 - **On-Premise** : Vous gérez TOUT (Réseau, Électricité, Serveurs, OS, Code).
 - **IaaS** *(Infrastructure as a Service)* : GCP vous loue une VM (Compute Engine). Vous gérez l'OS et le code.
 - **PaaS** *(Platform as a Service)* : Vous utilisez un outil existant mais configurez son architecture (ex : BigQuery, Cloud SQL...).
+- **SaaS** *(Software as a Service)* : Vous utilisez un outil clé en main, sans aucune gestion d'infrastructure (ex : Gmail, Google sheets...).
 - **FaaS** *(Function as a Service)* : L'abstraction ultime — vous ne gérez que la logique.
 
 ---
@@ -119,6 +120,7 @@ Traitement de données
 │  Cloud Run Jobs              ←── Conteneur éphémère          │
 └─────────────────────────────────────────────────────────────┘
 
+
 Orchestration
 ┌─────────────────────────────────────────────────────────────┐
 │  GitHub Actions              ←── CI/CD (gratuit, simple)     │
@@ -162,33 +164,6 @@ gold.daily_kpis            ← métriques prêtes pour Looker Studio
 
 Les **Scheduled Queries** de BigQuery permettent d'exécuter une requête SQL sur un calendrier défini — **sans serveur, sans orchestrateur externe**.
 
-```sql
--- Exemple : refresh Silver toutes les heures (Lab 03 — Partie 4)
-CREATE OR REPLACE TABLE `silver.events`
-PARTITION BY event_date
-CLUSTER BY user_id, event_type
-AS
-WITH typed AS (
-  SELECT
-    event_id,
-    PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%SZ', event_ts)  AS event_ts,
-    user_id,
-    LOWER(TRIM(event_type))                           AS event_type,
-    device_os,
-    SAFE_CAST(amount_str AS FLOAT64)                  AS amount,
-    country, _loaded_at
-  FROM `bronze.raw_events`
-  WHERE device_os NOT IN ('UnknownOS') AND country != 'XX'
-),
-deduped AS (
-  SELECT *, ROW_NUMBER() OVER (
-    PARTITION BY event_id ORDER BY event_ts DESC) AS rn
-  FROM typed
-)
-SELECT event_id, event_ts, DATE(event_ts) AS event_date,
-       user_id, event_type, device_os, amount, country, _loaded_at
-FROM deduped WHERE rn = 1;
-```
 
 ---
 
@@ -261,22 +236,20 @@ WHERE device_os != 'UnknownOS' AND country != 'XX';
 
 ---
 
-## 📊 Rappel : Impact du Partitionnement (Lab J2 — Partie 5)
+## 📊 Rappel : Impact du Partitionnement 
 
-Lors du **Benchmark du Lab 03**, vous avez mesuré l'impact concret :
+Rappel du **Benchmark**
 
 | Requête | Filtre | Bytes scannés | Réduction coût |
 |---------|--------|--------------|----------------|
 | Full scan | Aucun | ~100% | Référence |
 | Filtre partition | `event_date BETWEEN ...` | **~10-20%** | ↓ 80-90% |
-| Partition + Cluster | `event_date + user_id` | **~1-5%** | ↓ 95-99% |
 
 ```sql
--- ✅ Requête optimisée : partition + cluster
+-- ✅ Requête optimisée : partition
 SELECT event_date, event_type, amount
 FROM `silver.events`
 WHERE event_date = '2024-01-15'   -- partition pruning
-  AND user_id = 'usr-42'          -- cluster pruning
 ORDER BY event_ts;
 ```
 
@@ -365,134 +338,6 @@ Un **DAG** (Directed Acyclic Graph) modélise les tâches et leurs dépendances 
 
 **Acyclique** = pas de boucle. Chaque tâche ne peut pas dépendre d'elle-même (indirectement).
 
----
-
-<!-- _class: lead -->
-
-# Partie 5
-## Apache Airflow : Le Standard de l'Industrie
-
----
-
-## 🌬️ Apache Airflow — Présentation
-
-- L'outil open-source le plus utilisé au monde pour l'orchestration Data.
-- **Principe** : On définit les tâches et leurs dépendances en **code Python**.
-- Créé par Airbnb en 2014, donné à l'Apache Foundation en 2016.
-- Utilisé par Netflix, Airbnb, LinkedIn, Twitter, Lyft...
-
-### Philosophie
-
-> *"Configuration as Code"* — Le pipeline **est** du code Python, versionnable dans Git.
-
----
-
-## 🐍 Un DAG Airflow — Exemple minimal
-
-```python
-# dags/medallion_pipeline.py
-from airflow import DAG
-from airflow.providers.google.cloud.operators.bigquery import BigQueryInsertJobOperator
-from datetime import datetime, timedelta
-
-default_args = {
-    'owner': 'data-team',
-    'retries': 2,
-    'retry_delay': timedelta(minutes=5),
-    'email_on_failure': True,
-    'email': ['data-team@company.com'],
-}
-
-with DAG(
-    dag_id='medallion_pipeline',
-    schedule_interval='0 2 * * *',   # chaque nuit à 2h
-    start_date=datetime(2024, 1, 1),
-    catchup=False,
-    default_args=default_args,
-) as dag:
-
-    refresh_silver = BigQueryInsertJobOperator(
-        task_id='refresh_silver_events',
-        configuration={
-            'query': {
-                'query': 'CREATE OR REPLACE TABLE silver.events ...',
-                'useLegacySql': False,
-            }
-        }
-    )
-
-    refresh_gold = BigQueryInsertJobOperator(
-        task_id='refresh_gold_kpis',
-        configuration={
-            'query': {
-                'query': 'CREATE OR REPLACE TABLE gold.daily_kpis ...',
-                'useLegacySql': False,
-            }
-        }
-    )
-
-    # Définir la dépendance : Silver avant Gold
-    refresh_silver >> refresh_gold
-```
-
----
-
-## 🌐 L'Interface Airflow — Le DAG Graph
-
-```
-  DAG : medallion_pipeline
-  ┌─────────────────────────────────────────────┐
-  │  refresh_silver_events ──► refresh_gold_kpis │
-  │       [SUCCESS]               [RUNNING]       │
-  └─────────────────────────────────────────────┘
-
-  Historique des runs :
-  ┌──────────────┬──────────┬───────────┬──────────┐
-  │ Run Date     │ Silver   │ Gold      │ Status   │
-  ├──────────────┼──────────┼───────────┼──────────┤
-  │ 2024-01-16   │ ✅ 00:42 │ ✅ 01:15  │ SUCCESS  │
-  │ 2024-01-15   │ ✅ 00:38 │ ✅ 01:08  │ SUCCESS  │
-  │ 2024-01-14   │ ❌ 00:31 │ ⏭️ Skip   │ FAILED   │
-  └──────────────┴──────────┴───────────┴──────────┘
-```
-
-> 💡 Si Silver échoue, Airflow **ne lance pas Gold** et envoie une alerte email.
-
----
-
-## ⚙️ Les Operators Airflow — Boîte à outils
-
-| Operator | Usage |
-|----------|-------|
-| `BigQueryInsertJobOperator` | Exécuter une requête SQL BigQuery |
-| `BigQueryCheckOperator` | Vérifier une condition (`COUNT > 0`) |
-| `BashOperator` | Exécuter un script shell |
-| `PythonOperator` | Appeler une fonction Python |
-| `GCSToGCSOperator` | Copier des fichiers entre buckets |
-| `HttpSensor` | Attendre qu'une API soit disponible |
-| `SlackWebhookOperator` | Envoyer une notification Slack |
-| `dbt Cloud Operator` | Déclencher un job dbt Cloud |
-
----
-
-## ✅❌ Airflow — Avantages & Inconvénients
-
-### ✅ Avantages
-- Très puissant — gestion complexe des dates, des retards, des reruns
-- Écosystème immense (500+ operators)
-- Interface web de monitoring riche
-- Standard de l'industrie — toutes les entreprises le connaissent
-
-### ❌ Inconvénients
-
-| Problème | Impact |
-|----------|--------|
-| **Coût** | Google Cloud Composer : ~400€/mois minimum |
-| **Complexité** | Configuration initiale lourde |
-| **Maintenance** | Mises à jour fréquentes, gestion du scheduler |
-| **Latence** | Pas adapté aux pipelines temps réel |
-
-> 🎓 **Pour ce cours** : nous utiliserons GitHub Actions (gratuit, simple, suffisant pour des pipelines déclenchés journalièrement).
 
 ---
 
@@ -659,7 +504,6 @@ Materialized  Scheduled     │         │
 | Gestion dépendances | Non | Non | Basique | Avancée |
 | Multi-outils (Python+SQL+dbt) | SQL only | SQL only | Oui | Oui |
 | Monitoring & Alertes | Basique | Basique | GitHub UI | Interface riche |
-| Adapté au cours | J2 Lab | J2 Lab | **J3 Lab** | Référence pro |
 
 ---
 
@@ -693,7 +537,7 @@ Scheduled Query — bronze → silver.events (toutes les heures)
 Scheduled Query — silver → gold.daily_kpis (chaque nuit)
          │
          ▼
-dbt test — Vérification qualité des données
+test — Vérification qualité des données
          │
          ▼
 Looker Studio — Dashboard en temps réel
@@ -709,8 +553,6 @@ Alerte Slack/Email si echec a n'importe quelle etape
 1. Pourquoi ne peut-on pas utiliser une **Materialized View** pour la déduplication `ROW_NUMBER()` ?
 2. Quelle est la différence entre un **cron** classique et un **DAG** Airflow ?
 3. Dans quel cas GitHub Actions devient-il **insuffisant** comme orchestrateur ?
-4. Comment gérer les **données en retard** *(late data)* dans un pipeline planifié ?
-5. Si le budget est illimité, vaut-il toujours mieux utiliser **Airflow** ? Pourquoi ?
 
 ---
 
@@ -718,14 +560,11 @@ Alerte Slack/Email si echec a n'importe quelle etape
 
 ### Lab 03 — Pipeline en production avec GitHub Actions
 
-1. **Créer un workflow GitHub Actions** qui déclenche le pipeline Medallion
-2. **Configurer les secrets** GCP dans GitHub (compte de service)
-3. **Tester le déclenchement manuel** via `workflow_dispatch`
-4. **Vérifier les logs** dans l'onglet Actions
-5. **Simuler une erreur** et observer le comportement (notifications)
+**Créer un workflow GitHub Actions** qui déclenche le pipeline Medallion
+
 
 ### Architecture cible
 
 ```
-GitHub Actions (cron) → dlt (Bronze) → Scheduled Query (Silver) → Gold → Looker
+GitHub Actions (cron) → dlt (Bronze) → Scheduled Query (Silver) → Gold
 ```
