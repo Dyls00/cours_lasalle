@@ -5,3 +5,7 @@ __pycache__/
 *.pyc
 **/04_infrastructure/
 data_manipulation/02_notebooks/solutions/08_capstone_eda_thelook_solution.ipynb
+
+# Bases de données DuckDB
+*.duckdb
+*.duckdb.wal
