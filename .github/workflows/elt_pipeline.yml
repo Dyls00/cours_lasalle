@@ -3,9 +3,6 @@ name: Pipeline ELT Quotidien
 on:
   push:
     branches: main
-  workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * *'
 
 jobs:
   run-elt:
