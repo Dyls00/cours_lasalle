@@ -79,6 +79,57 @@ En équipe, vous allez concevoir la migration technique complète de FastMarket 
 
 - Maîtriser les coûts (FinOps) : Anticiper et modéliser la facture cloud, en optimisant la consommation de ressources.
 
+# Deroulement
+JOUR 1 : Du Monolithe au Découplage
+  Module 1 : Audit Technique du Monolithe
+
+    Objectif : Diagnostiquer pourquoi le système traditionnel s'effondre lors d'une vente flash.
+    Concepts abordés :
+      - Conflit fondamental OLTP (Transactions) vs OLAP (Analytique / Rapports).
+      - Analyse des goulots d'étranglement : verrous SQL (Table Locks) et limites du scaling vertical (Scale-up).
+      - Enjeux réglementaires : l'échec du droit à l'oubli (RGPD) causé par le couplage fort en base de données.
+
+    - Activité: Analyse d'un cas pratique basé sur des problèmes métiers
+  
+
+Module 2 : Découplage de la Base pour l'Analytique
+
+    Objectif : Concevoir une architecture asynchrone pour soulager la base opérationnelle.
+    Concepts abordés :
+        Pourquoi et comment séparer le chemin transactionnel du chemin analytique.
+        Introduction au comcept du CDC
+        Modélisation de la solution cible 
+
+   TP Pratique : Déploiement d'un pipeline CDC avec Datastream et 
+
+
+JOUR 2 : L'Entrepôt Analytique & Gestion Multi-Sources
+  Module 3 : Organisation de l'Entrepôt de Données (Data Warehouse)
+
+    Objectif : Comprendre et structurer un stockage analytique taillé pour le volume.
+    Concepts abordés :
+      Pourquoi une base OLAP (BigQuery) est 100x plus rapide qu'un PostgreSQL pour agréger des millions de lignes.
+      Organisation logique : Projets, Jeux de données (Datasets), Tables et partitionnement par date (pour éviter les scans complets coûteux).
+
+   TP Pratique : Création du Dataset analytique sur BigQuery
+
+
+  Module 4 : Ingestion Multi-Sources & Données Non Structurées
+
+    Objectif : Centraliser des données hétérogènes nécessaires à l'analyse métier.
+    Concepts abordés :
+        La notion de stockage objet (Object Storage) pour le non structuré.
+        Multi-source : croiser des données relationnelles (utilisateurs), des flux d'événements (achats) et des fichiers bruts (logs de navigation, photos de baskets).
+
+    TP Pratique :
+
+        Création d'un bucket Google Cloud Storage (GCS) pour stocker des exports JSON bruts.
+        Création d'une table externe dans BigQuery qui requête directement les fichiers JSON posés sur Cloud Storage sans les charger.
+
+
+ JOUR 3 : 
+
+
 ## Evaluation
 
 Évaluation sera en deux parties:
