@@ -38,11 +38,92 @@ style: |
 
 >  **Notre mission de la semaine** : Sortir d'une vision monolithique centralisée pour concevoir une architecture data cloud résiliente et conforme aux standards industriels sur **Google Cloud Platform**.
 
-### Objectifs d'apprentissage du Jour 1
-1. **Comprendre la fracture OLTP vs OLAP** : Pourquoi mutualiser transactions et analytics détruit la production.
-2. **Diagnostiquer les pannes réelles** : Observer l'utilisation des ressources, l'invalidation de cache et le *Table Bloat*.
-3. **Maîtriser les compromis des microservices** : Comprendre les bénéfices et limites de l'architecture en microservices.
-4. **Implémenter le streaming d'événements** : Remplacer la "double insertion"par le *CDC* basé sur le journal WAL.
+
+1. **Comprendre les modèles Cloud (IaaS vs PaaS)** : Choisir le bon niveau d'abstraction (VM vs Cloud SQL).
+2. **Comprendre la fracture OLTP vs OLAP** : Pourquoi mutualiser transactions et analytics détruit la production.
+3. **Diagnostiquer les pannes réelles** : Observer l'utilisation des ressources, l'invalidation de cache et le *Table Bloat*.
+4. **Maîtriser les compromis des microservices** : Comprendre les bénéfices et limites de l'architecture en microservices.
+5. **Implémenter le streaming d'événements** : Remplacer la "double insertion" par le *CDC* basé sur le journal WAL.
+
+---
+
+## ☁️ 1. Les Fondamentaux du Cloud : Pourquoi migrer ?
+
+Le Cloud n'est pas "l'ordinateur de quelqu'un d'autre" : c'est un **changement de paradigme technique et financier**.
+
+### 3 Piliers Clés
+1. **Élasticité à la demande (*On-Demand Self-Service*)** : Provisionner des téraoctets de données ou 100 CPUs en 2 minutes via une API ou une console, sans attendre 6 semaines de livraison de matériel.
+2. **CapEx vs OpEx** :
+   - *On-Premise (CapEx)* : Investissement lourd initial (achat de baies de serveurs, climatisation, amortissement sur 5 ans).
+   - *Cloud (OpEx)* : Dépense opérationnelle flexible au centime près, facturée à la seconde (*Pay-as-you-go*).
+3. **Haute Disponibilité Mondiale** : Répartition native par Régions (ex: `europe-west1` Bruxelles) et multi-Zones redondées (`europe-west1-b`, `europe-west1-c`).
+
+---
+
+## 🛡️ 2. Modèle de Responsabilité Partagée
+
+Dans le Cloud, la question n'est pas *"Est-ce sécurisé ?"*, mais **"Qui est responsable de quoi ?"**
+
+| Couche Technique | On-Premise (Local) | IaaS (Infrastructure) | PaaS / DBaaS (Plateforme) | SaaS (Logiciel) |
+|---|:---:|:---:|:---:|:---:|
+| **Accès & Données** | **Vous** | **Vous** | **Vous** | **Vous** |
+| **Application & Code** | **Vous** | **Vous** | **Vous** | Fournisseur |
+| **Moteur DB & Runtimes** | **Vous** | **Vous** | ☁️ **GCP** | ☁️ **GCP** |
+| **Patchs OS & Sécurité** | **Vous** | **Vous** | ☁️ **GCP** | ☁️ **GCP** |
+| **Virtualisation & Hyperviseur** | **Vous** | ☁️ **GCP** | ☁️ **GCP** | ☁️ **GCP** |
+| **Serveurs, Disques, Réseau** | **Vous** | ☁️ **GCP** | ☁️ **GCP** | ☁️ **GCP** |
+
+
+---
+
+## ⚖️ 3. IaaS vs PaaS : Le Comparatif Décisif
+
+| Critère d'évaluation | IaaS (ex: Compute Engine VM) | PaaS / DBaaS (ex: Cloud SQL) |
+|---|---|---|
+| **Niveau de contrôle** | **Total** (accès `root` SSH, tuning noyau Linux). | **Ciblé** (accès DB et flags de configuration). |
+| **Maintien en conditions opérationnelles** | **Lourd** : patchs de sécurité de l'OS, mises à jour noyau, gestion de l'espace disque. | **Automatisé** : fenêtres de maintenance gérées par Google, redimensionnement de disque automatique. |
+| **Haute Disponibilité (HA)** | **Complexe** : configurer manuellement réplication primaire/secondaire, Sentinel, VIP... | **1 case à cocher** : Basculement automatique (*failover*) multi-zone synchrone en < 60s. |
+| **Sauvegardes & Restauration** | **Manuelles** : scripts cron de dump, snapshots manuels, exports GCS. | **Natives** : Sauvegardes quotidiennes + Restauration à la seconde (*Point-in-Time Recovery*). |
+
+---
+
+## 🧪 4. Démo Comparative : Déployer PostgreSQL
+
+### Option A — Approche IaaS (Compute Engine VM)
+```bash
+# 1. Provisionner une machine virtuelle Linux
+gcloud compute instances create pg-vm --zone=europe-west1-b --machine-type=e2-medium
+# 2. Se connecter en SSH et installer le serveur manuellement
+gcloud compute ssh pg-vm
+sudo apt update && sudo apt install -y postgresql postgresql-contrib
+# 3. Éditer /etc/postgresql/.../postgresql.conf et pg_hba.conf pour autoriser le réseau
+# 4. Configurer manuellement un cron de backup vers Cloud Storage (gsutil)...
+```
+*➡️ Résultat : 20 minutes de configuration, et qui gère le crash matériel à 3h du matin ? **Vous.***
+
+---
+
+### Option B — Approche PaaS (Google Cloud SQL)
+```bash
+# Une seule commande déclare l'instance avec sauvegardes et Query Insights inclus :
+gcloud sql instances create pg-fastmarket \
+    --database-version=POSTGRES_16 \
+    --tier=db-f1-micro \
+    --region=europe-west1 \
+    --insights-config-query-insights-enabled
+```
+*➡️ Résultat : En 3 minutes, l'instance est prête, chiffrée, monitorée, sauvegardée automatiquement, avec basculement automatique possible en cas de panne matérielle.*
+
+---
+
+## 💡 Pourquoi FastMarket a choisi Cloud SQL (PaaS) ?
+
+- L'équipe technique de FastMarket a fait le choix du **PaaS (Cloud SQL)** pour éviter de recruter une équipe d'administrateurs de bases de données (DBA) 24/7.
+- **Mais attention au piège !**
+  > ⚠️ **Le Cloud managé (PaaS) gère l'infrastructure matérielle et l'OS, mais IL NE GÈRE PAS la conception de vos tables, vos verrous, ni vos requêtes SQL.**
+- Si vous balancez des requêtes d'analytics de 10 millions de lignes sur une petite base OLTP managée, **le Cloud SQL plantera tout autant qu'un serveur physique !**
+
+C'est exactement ce qui arrive à **FastMarket**... Découvrons la crise.
 
 ---
 
