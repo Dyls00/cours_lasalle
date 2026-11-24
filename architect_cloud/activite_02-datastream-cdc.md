@@ -2,7 +2,7 @@
 
 > **Module :** Architecture Data Cloud sur Google Cloud Platform 
 > **Niveau :** Master 2 Informatique / Cloud & Data Architecture  
-> **Format :** Individuel | **Durée estimée :** 1h
+> **Format :** Individuel | **Durée estimée :** 1h30
 
 ---
 
@@ -15,19 +15,32 @@
 
 ---
 
-## 📋 Étape 1 : Vérification des Prérequis Source (PostgreSQL)
+## 📋 Étape 1 : Prérequis PostgreSQL & Utilisateur de Réplication
 
-Pour que Datastream puisse capturer les modifications depuis le journal de transactions (**WAL**), l'instance Cloud SQL doit autoriser le décodage logique.
+Pour que Datastream puisse capturer les modifications depuis le journal de transactions (**WAL**), deux configurations sont indispensables sur l'instance Cloud SQL :
 
-| Paramètre | Valeur attendue |
-|---|---|
-| **Instance source** | `fastmarket-VOTRE_NOM` (créée à l'activité précédente) |
-| **Drapeau de base de données (*Flag*)** | `cloudsql.logical_decoding = on` |
-| **Base de données source** | `fastmarket_shop` |
-| **Compte de connexion** | `postgres_user` (ou utilisateur disposant du rôle `REPLICATION`) |
+### 1. Activer le Décodage Logique (*Logical Decoding*)
+* Dans la console Cloud SQL, vérifiez dans l'onglet **Configuration** que le drapeau de base de données est actif :  
+  `cloudsql.logical_decoding = on`  
+  *(Si vous devez l'ajouter, appliquez la modification et laissez l'instance redémarrer).*
 
-> 💡 **Vérification rapide :**  
-> Dans la console Cloud SQL, vérifiez dans l'onglet **Configuration** que le drapeau `cloudsql.logical_decoding` est bien activé. Si vous devez l'ajouter, un redémarrage de l'instance sera requis.
+### 2. Créer un Utilisateur Dédié au CDC avec le Rôle `REPLICATION`
+Par principe de sécurité et de moindre privilège, on ne donne jamais le compte applicatif principal à un outil d'ingestion. Vous devez créer un compte dédié à Datastream.
+
+Connectez-vous à la base `fastmarket_shop` (via Cloud Shell ou client SQL) et exécutez les instructions suivantes :
+
+```sql
+-- 1. Créer l'utilisateur avec l'attribut REPLICATION
+CREATE USER datastream_user WITH REPLICATION PASSWORD 'VotreMotDePasseCDC123!';
+
+-- 2. Accorder les droits de lecture sur les données à répliquer
+GRANT USAGE ON SCHEMA public TO datastream_user;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO datastream_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO datastream_user;
+```
+
+> 💡 **Pourquoi le statut `REPLICATION` ?**  
+> Ce privilège autorise PostgreSQL à ouvrir un **slot de réplication logique** (*replication slot*) et à streamer le flux binaire du WAL directement vers Datastream.
 
 ---
 
@@ -39,7 +52,8 @@ Depuis la console GCP, rendez-vous dans le service **Datastream > Profils de con
 * **Nom du profil :** `src-postgres-fastmarket`
 * **Type :** PostgreSQL
 * **Hôte & Port :** IP de votre instance Cloud SQL / Port `5432`
-* **Base de données & Identifiants :** `fastmarket_shop` / utilisateur et mot de passe de votre base
+* **Base de données :** `fastmarket_shop`
+* **Identifiants :** Utilisateur `datastream_user` / mot de passe défini à l'étape 1
 * **Méthode de connectivité :** Liste d'adresses IP autorisées (*IP allowlisting*) ou Connectivité privée
 
 > ⚠️ **Indice Réseau :**  
