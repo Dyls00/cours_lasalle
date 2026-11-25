@@ -2,7 +2,7 @@
 
 > **Module :** Architecture Data Cloud sur Google Cloud Platform 
 > **Niveau :** Master 2 Informatique / Cloud & Data Architecture  
-> **Format :** Individuel | **Durée estimée :** 1h30
+> **Format :** Individuel 
 
 ---
 
@@ -20,9 +20,6 @@
 Pour que Datastream puisse capturer les modifications depuis le journal de transactions (**WAL**), deux configurations sont indispensables sur l'instance Cloud SQL :
 
 ### 1. Activer le Décodage Logique (*Logical Decoding*)
-* Dans la console Cloud SQL, vérifiez dans l'onglet **Configuration** que le drapeau de base de données est actif :  
-  `cloudsql.logical_decoding = on`  
-  *(Si vous devez l'ajouter, appliquez la modification et laissez l'instance redémarrer).*
 
 ### 2. Créer l'Utilisateur et les Objets de Réplication (Publication & Slot)
 Par principe de sécurité et de moindre privilège, on ne donne jamais le compte applicatif principal à un outil d'ingestion. 
@@ -32,25 +29,8 @@ Datastream a besoin de 3 éléments sous PostgreSQL pour fonctionner :
 2. Une **Publication** qui liste les tables dont les changements doivent être capturés.
 3. Un **Slot de Réplication Logique** (*Replication Slot*) utilisant le plugin `pgoutput`.
 
-Connectez-vous à votre base de données  avec l'utilisateur admin/postgres et exécutez les instructions suivantes :
 
-```sql
--- 1. Créer l'utilisateur avec l'attribut REPLICATION
-CREATE USER datastream_user WITH REPLICATION PASSWORD 'VotreMotDePasseCDC123!';
-GRANT cloudsqlsuperuser TO datastream_user;
-
--- 2. Accorder les droits de lecture sur les données à répliquer
-GRANT USAGE ON SCHEMA public TO datastream_user;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO datastream_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO datastream_user;
-
--- 3. Créer la Publication pour toutes les tables et donner la propriété à datastream_user
-CREATE PUBLICATION "fastmarket-pub" FOR ALL TABLES;
-ALTER PUBLICATION "fastmarket-pub" OWNER TO datastream_user;
-
--- 4. Créer le Slot de Réplication Logique (avec le plugin natif pgoutput)
-SELECT PG_CREATE_LOGICAL_REPLICATION_SLOT('fastmarket-rep', 'pgoutput');
-```
+> Suivez les indications de Datastream dans la section 'Avant de continuer, voir les prérequis'
 
 > 💡 **Pourquoi ces objets sont-ils nécessaires ?**  
 > * **La Publication (`fastmarket-pub`)** : C'est le "filtre" PostgreSQL qui spécifie quelles tables envoient leurs événements de modification (`INSERT`, `UPDATE`, `DELETE`).
@@ -68,7 +48,7 @@ Depuis la console GCP, rendez-vous dans le service **Datastream > Profils de con
 * **Hôte & Port :** IP de votre instance Cloud SQL / Port `5432`
 * **Base de données :** `NOM_DE_VOTRE_DB`
 * **Identifiants :** Utilisateur `datastream_user` / mot de passe défini à l'étape 1
-* **Méthode de connectivité :** Liste d'adresses IP autorisées (*IP allowlisting*) ou Connectivité privée
+* **Méthode de connectivité :** Liste d'adresses IP autorisées (*IP allowlisting*) 
 
 > ⚠️ **Indice Réseau :**  
 > Si vous utilisez la méthode par IP autorisée, Datastream affiche une liste d'adresses IP publiques Google. Pensez à ajouter ces IPs dans la section **Réseaux autorisés** (*Authorized Networks*) de votre instance Cloud SQL !
@@ -86,12 +66,13 @@ Dans **Datastream > Flux** (*Streams*), créez un nouveau flux de réplication e
 
 | Paramètre | Valeur attendue |
 |---|---|
-| **Nom du flux** | `stream-fastmarket-cdc-VOTRE_NOM` |
+| **Nom du flux** | `fastmarket-cdc-VOTRE_NOM` |
 | **Profil source** | `src-postgres-fastmarket-VOTRE_NOM` |
 | **Profil de destination** | `dst-bigquery-analytics-VOTRE_NOM` |
 | **Objets sources à répliquer** | Schéma et tables qui vous ssemblent logiques |
-| **Type de réplication** | Rétroaction historique + Modifications continues (*Backfill + CDC*) |
 | **Nom du jeu de données BigQuery cible** | Déduit du nom de la source ou personnalisé |
+| **Fraicheur des données*** | 5 minutes | (sera modifier après tests)
+| Methode d'ajout | Append | 
 
 > 🔍 **Avant de démarrer le flux :**  
 > Cliquez sur **Valider le flux** (*Run validation*). Datastream vérifie automatiquement la connectivité, la présence des slots de réplication et les droits d'accès. Corrigez les éventuelles alertes avant de lancer le flux.
@@ -119,3 +100,6 @@ Une fois le flux au statut **En cours d'exécution** (*Running*) :
      WHERE email = 'test.cdc@mail.com';
      ```
    * **Constatez :** La ligne apparaît dans BigQuery, sans jamais avoir exécuté d'export ou de script batch !
+
+> ⚠️ les analystes ont besoin d'une fraîcheur de la donnée quotidienne. 
+**Modifier** la fraîcheur des données de manière appropriée. /!\ garder en tête que plus la donner fraîche, plus les coups seront élevés!
